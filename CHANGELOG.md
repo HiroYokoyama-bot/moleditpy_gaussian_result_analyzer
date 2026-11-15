@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 — 2026-11-15
+
+- Read NBO 7 output. A Gaussian 16 linked with NBO 7 prints all-caps headers, E(2) rows without the "/" separator and RY (not RY*) labels; every NBO section previously came back empty.
+- Bond Analysis now shows NBO hybrids; the parser never produced them before.
+- New NBO data: Lewis / non-Lewis totals, the per-atom NPA breakdown, natural electron configurations, NAO occupancies and NHO bond-bending deviations.
+- A log with several NBO summaries now resolves to the last one instead of one concatenated list with repeating indices.
+
 ## 1.0.1 — 2026-11-14
 
 - Declare the Qt dependency as `PySide6-Essentials`, the package MoleditPy itself ships, instead of the full `PySide6`.

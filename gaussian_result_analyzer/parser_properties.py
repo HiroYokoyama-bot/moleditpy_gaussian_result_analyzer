@@ -664,6 +664,10 @@ class _PropertyParsingMixin:
                             "atom_idx": int(parts[1]) - 1,
                             "atom_sym": parts[0],
                             "charge": float(parts[2]),
+                            "core": float(parts[3]),
+                            "valence": float(parts[4]),
+                            "rydberg": float(parts[5]),
+                            "total": float(parts[6]),
                         }
                     )
                 except ValueError as exc:

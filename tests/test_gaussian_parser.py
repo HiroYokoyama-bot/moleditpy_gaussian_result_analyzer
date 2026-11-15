@@ -208,8 +208,14 @@ class TestNbo7Block(unittest.TestCase):
         self.assertAlmostEqual(rows[0]["core"], 1.99996, places=4)
         self.assertAlmostEqual(rows[0]["valence"], 6.8689, places=3)
         self.assertAlmostEqual(rows[0]["total"], 8.88482, places=4)
-        # The pre-existing NPA charge reader sees the same table.
-        self.assertEqual(len(data["charges"]["NBO"]), 3)
+        # The pre-existing NPA charge reader sees the same table, and
+        # its rows carry the decomposition the charge view displays.
+        nbo_charges = data["charges"]["NBO"]
+        self.assertEqual(len(nbo_charges), 3)
+        self.assertAlmostEqual(nbo_charges[0]["core"], 1.99996, places=4)
+        self.assertAlmostEqual(nbo_charges[0]["valence"], 6.8689, places=3)
+        self.assertAlmostEqual(nbo_charges[0]["rydberg"], 0.01596, places=4)
+        self.assertAlmostEqual(nbo_charges[0]["total"], 8.88482, places=4)
 
     def test_configurations(self):
         configs = _parse("water_nbo7_block")["nbo_configurations"]

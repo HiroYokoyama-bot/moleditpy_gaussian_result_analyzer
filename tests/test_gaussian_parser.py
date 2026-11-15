@@ -163,6 +163,88 @@ class TestProperties(unittest.TestCase):
         self.assertEqual(len(data["nbo_perturbation"]), 4)
 
 
+class TestNbo7Block(unittest.TestCase):
+    """NBO 7.0 output (water_nbo7_block.out) — the NBO block only.
+
+    The other NBO fixtures come from Gaussian's built-in NBO 3.1; this
+    block is the NBO 7.0 format a linked NBO 7 prints instead: all-caps
+    headers, E(2) rows without the "/" separator, RY rather than RY*.
+    """
+
+    def test_orbitals_and_perturbation(self):
+        data = _parse("water_nbo7_block")
+        self.assertEqual(len(data["nbo_orbitals"]), 24)
+        self.assertEqual(len(data["nbo_perturbation"]), 6)
+
+    def test_hybrids_are_populated(self):
+        data = _parse("water_nbo7_block")
+        bd = next(
+            o for o in data["nbo_orbitals"] if o["type"].startswith("BD (")
+        )
+        self.assertEqual(bd["index"], 4)
+        self.assertAlmostEqual(bd["occupancy"], 1.99864, places=4)
+        self.assertEqual(len(bd["hybrids"]), 2)
+        oxygen, hydrogen = bd["hybrids"]
+        self.assertEqual(oxygen["label"], "sp3.43")
+        self.assertAlmostEqual(oxygen["s_pct"], 22.56, places=2)
+        self.assertAlmostEqual(oxygen["p_pct"], 77.29, places=2)
+        self.assertAlmostEqual(oxygen["weight_pct"], 72.35, places=2)
+        self.assertEqual(hydrogen["label"], "s")
+        self.assertAlmostEqual(hydrogen["weight_pct"], 27.65, places=2)
+
+    def test_totals(self):
+        totals = _parse("water_nbo7_block")["nbo_totals"]
+        self.assertAlmostEqual(totals["lewis"], 9.98992, places=4)
+        self.assertAlmostEqual(totals["lewis_pct"], 99.899, places=2)
+        self.assertAlmostEqual(totals["valence_nonlewis"], 0.00027, places=4)
+        self.assertAlmostEqual(totals["rydberg_nonlewis"], 0.00982, places=4)
+
+    def test_population(self):
+        data = _parse("water_nbo7_block")
+        rows = data["nbo_population"]
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[0]["element"], "O")
+        self.assertAlmostEqual(rows[0]["charge"], -0.88482, places=4)
+        self.assertAlmostEqual(rows[0]["core"], 1.99996, places=4)
+        self.assertAlmostEqual(rows[0]["valence"], 6.8689, places=3)
+        self.assertAlmostEqual(rows[0]["total"], 8.88482, places=4)
+        # The pre-existing NPA charge reader sees the same table, and
+        # its rows carry the decomposition the charge view displays.
+        nbo_charges = data["charges"]["NBO"]
+        self.assertEqual(len(nbo_charges), 3)
+        self.assertAlmostEqual(nbo_charges[0]["core"], 1.99996, places=4)
+        self.assertAlmostEqual(nbo_charges[0]["valence"], 6.8689, places=3)
+        self.assertAlmostEqual(nbo_charges[0]["rydberg"], 0.01596, places=4)
+        self.assertAlmostEqual(nbo_charges[0]["total"], 8.88482, places=4)
+
+    def test_configurations(self):
+        configs = _parse("water_nbo7_block")["nbo_configurations"]
+        self.assertEqual(len(configs), 3)
+        self.assertTrue(configs[0]["core"])
+        self.assertAlmostEqual(configs[0]["orbitals"]["2s"], 1.75, places=2)
+        self.assertAlmostEqual(configs[0]["orbitals"]["2p"], 5.12, places=2)
+        self.assertFalse(configs[1]["core"])
+        self.assertAlmostEqual(configs[1]["orbitals"]["1s"], 0.55, places=2)
+
+    def test_nao(self):
+        rows = _parse("water_nbo7_block")["nbo_nao"]
+        self.assertEqual(len(rows), 24)
+        self.assertAlmostEqual(
+            sum(r["occupancy"] for r in rows), 10.0, places=2
+        )
+        self.assertEqual(rows[0]["kind"], "Cor")
+        self.assertEqual(rows[0]["ao"], "1s")
+        self.assertAlmostEqual(rows[0]["energy"], -18.75648, places=3)
+
+    def test_bending(self):
+        rows = _parse("water_nbo7_block")["nbo_bending"]
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]["type"], "LP")
+        self.assertEqual(rows[0]["atoms"], [("O", 1)])
+        self.assertAlmostEqual(rows[0]["h1_theta"], 90.8, places=1)
+        self.assertIsNone(rows[0]["h1_dev"])
+
+
 class TestOrbitals(unittest.TestCase):
     def test_restricted_mo_table_is_complete(self):
         data = _parse("benzene_opt_freq")

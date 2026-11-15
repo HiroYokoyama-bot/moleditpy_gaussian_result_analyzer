@@ -17,3 +17,14 @@ the following steps in order:
    coverage result, tag, and release URL to the user.
 
 Do not bypass the PR or tag a commit before its main CI passes.
+
+# Shared implementation
+
+The ORCA Result Analyzer (`HiroYokoyama/moleditpy_orca_result_analyzer_plugin`)
+is the main implementation for everything except the parser. The non-parser
+modules (the dialogs and analysis panels, e.g. `bond_analysis.py` and
+`charge_analysis.py`) are copies of the ORCA ones: make shared changes in the
+ORCA repository first, then copy them here. Keep only the differences that
+are specific to this plugin — the package and dialog class names,
+`__init__.py`, the `gui.py` wiring, and the parser modules, which are
+specific to each host program's output format.

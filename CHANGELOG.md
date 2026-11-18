@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 — 2026-11-18
+
+- New command line, with MoleditPy 5.3.0: `moleditpy -r gaussian_result_analyzer parse FILE` reads a log or checkpoint without opening a window and prints a summary (version, termination, formula, SCF energy, <S**2>, HOMO/LUMO, dipole, steps, optimisation convergence, frequencies, Gibbs energy, excited states, NMR, charges, NBO). `--json` prints the parsed data, `--section NAME` limits it to some keys, `-o PATH` writes to a file. A checkpoint is paired with its output, as in the window.
+
 ## 1.1.1 — 2026-11-18
 
 - Read NBO tables of molecules past 100 atoms. From atom 100 on, NBO prints the number fused to the element (`H100`, `Cl101`), and those rows were skipped: NBO charges, the NPA breakdown, configurations, NAO occupancies, bending rows and the atom indices and hybrids of NBOs on those atoms were all incomplete.

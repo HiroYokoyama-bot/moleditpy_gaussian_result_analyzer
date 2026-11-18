@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1 — 2026-11-18
+
+- New `xyz` command: `moleditpy -r gaussian_result_analyzer xyz FILE` writes the final structure as XYZ, and `--all` every step as a multi-frame XYZ (the points of a scan or IRC, otherwise the optimisation cycles) with each energy in the comment line. `-o PATH` writes to a file.
+
 ## 1.2.0 — 2026-11-18
 
 - New command line, with MoleditPy 5.3.0: `moleditpy -r gaussian_result_analyzer parse FILE` reads a log or checkpoint without opening a window and prints a summary (version, termination, formula, SCF energy, <S**2>, HOMO/LUMO, dipole, steps, optimisation convergence, frequencies, Gibbs energy, excited states, NMR, charges, NBO). `--json` prints the parsed data, `--section NAME` limits it to some keys, `-o PATH` writes to a file. A checkpoint is paired with its output, as in the window.

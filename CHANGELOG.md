@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 — 2026-11-18
+
+- Read NBO tables of molecules past 100 atoms. From atom 100 on, NBO prints the number fused to the element (`H100`, `Cl101`), and those rows were skipped: NBO charges, the NPA breakdown, configurations, NAO occupancies, bending rows and the atom indices and hybrids of NBOs on those atoms were all incomplete.
+- Read the NPA breakdown, natural electron configurations, NAO occupancies, bond-bending rows and NBO summary to their last row; fixed windows cut them off at 54 atoms, 78 atoms, 199 rows and 5000 lines.
+- The Bond Analysis Lewis / non-Lewis line no longer fails on an output that has the Lewis total but not every non-Lewis line.
+
 ## 1.1.0 — 2026-11-15
 
 - Read NBO 7 output. A Gaussian 16 linked with NBO 7 prints all-caps headers, E(2) rows without the "/" separator and RY (not RY*) labels; every NBO section previously came back empty.

@@ -173,6 +173,19 @@ def _add_sibling_output(parser, fchk_path, progress):
         parser.data["fchk_note"] = combined.data["fchk_note"]
 
 
+def parse_into(parser, path, content, progress=None):
+    """Parse *content* read from *path*, pairing an output with its checkpoint."""
+    if is_fchk_path(path) and looks_like_fchk(content):
+        parser.load_fchk(content, path, progress=progress)
+        parser.data["fchk_path"] = path
+        _add_sibling_output(parser, path, progress)
+    else:
+        parser.load_from_memory(content, path, progress=progress)
+        fchk_path = sibling_fchk(path)
+        if fchk_path:
+            attach_fchk(parser, fchk_path)
+
+
 def load_gaussian_parser(path, parent):
     """Read and parse *path* behind a progress dialog.
 
@@ -188,15 +201,7 @@ def load_gaussian_parser(path, parent):
 
         parser = GaussianParser()
         try:
-            if is_fchk_path(path) and looks_like_fchk(content):
-                parser.load_fchk(content, path, progress=progress.on_parse_step)
-                parser.data["fchk_path"] = path
-                _add_sibling_output(parser, path, progress.on_parse_step)
-            else:
-                parser.load_from_memory(content, path, progress=progress.on_parse_step)
-                fchk_path = sibling_fchk(path)
-                if fchk_path:
-                    attach_fchk(parser, fchk_path)
+            parse_into(parser, path, content, progress=progress.on_parse_step)
         except ParseCancelled:
             return None
         return parser

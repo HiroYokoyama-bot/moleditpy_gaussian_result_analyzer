@@ -34,12 +34,12 @@ _NBO_TOTAL = re.compile(
     r"\s+(\d+\.\d+)\s+\(\s*(\d+\.\d+)%"
 )
 _NPA_ROW = re.compile(
-    r"^\s*([A-Z][a-z]?)\s+(\d+)\s+(-?\d+\.\d+)\s+(\d+\.\d+)\s+"
+    r"^\s*([A-Z][a-z]?)\s*(\d+)\s+(-?\d+\.\d+)\s+(\d+\.\d+)\s+"
     r"(\d+\.\d+)\s+(\d+\.\d+)\s+(\d+\.\d+)\s*$"
 )
 _CONFIG_ORBITAL = re.compile(r"(\d+[a-z][a-z0-9]*)\(\s*(\d+\.\d+)\)", re.IGNORECASE)
 _NAO_ROW = re.compile(
-    r"^\s*(\d+)\s+([A-Z][a-z]?)\s+(\d+)\s+(\S+)\s+"
+    r"^\s*(\d+)\s+([A-Z][a-z]?)\s*(\d+)\s+(\S+)\s+"
     r"(Cor|Val|Ryd)\(\s*([^)]+)\)\s+(\d+\.\d+)(?:\s+(-?\d+\.\d+))?\s*$"
 )
 _BENDING_ROW = re.compile(
@@ -52,6 +52,11 @@ _D_FLOAT = r"(-?\d*\.\d+(?:[DdEe][-+]?\d+)?)"
 def _float_d(text):
     """Float from Fortran notation, which writes the exponent with a D."""
     return float(text.replace("D", "E").replace("d", "e"))
+
+
+def _split_atom_label(line):
+    """Split a table row, separating a fused label such as "Cl101" from 100 on."""
+    return re.sub(r"^\s*([A-Z][a-z]?)(\d+)(?=\s)", r"\1 \2", line).split()
 
 
 class _PropertyParsingMixin:
@@ -167,7 +172,7 @@ class _PropertyParsingMixin:
             lambda line: "natural bond orbitals (summary)" in line.lower()
         )
         if start is not None:
-            for row in self.lines[start + 1 : start + 5000]:
+            for row in self.lines[start + 1 :]:
                 if row.strip().startswith("Total Lewis") or (
                     "NBO analysis completed" in row
                 ):
@@ -181,7 +186,7 @@ class _PropertyParsingMixin:
                             "type": " ".join(match.group(2).split()),
                             "atoms": atoms,
                             "atom_indices": [
-                                int(n) - 1 for n in re.findall(r"\b\d+\b", atoms)
+                                int(n) - 1 for n in re.findall(r"\d+", atoms)
                             ],
                             "occupancy": float(match.group(4)),
                             "energy": float(match.group(5)),
@@ -224,7 +229,7 @@ class _PropertyParsingMixin:
             r"^\s*(\d+)\.\s*\(\s*[\d.]+\)\s*\S+?\s*\(\s*\d+\)\s*(.*)$"
         )
         pol_re = re.compile(
-            r"^\s*\(\s*([\d.]+)%\)\s+[-\d.]+\*?\s*([A-Za-z]+)\s+(\d+)\s+(.*)$"
+            r"^\s*\(\s*([\d.]+)%\)\s+[-\d.]+\*?\s*([A-Za-z]+)\s*(\d+)\s+(.*)$"
         )
 
         def _label(s_pct, p_pct, d_pct):
@@ -279,7 +284,7 @@ class _PropertyParsingMixin:
                 rest = hm.group(2)
                 comp = _extract(rest)
                 if comp is not None:
-                    am = re.match(r"\s*([A-Za-z]+)\s+(\d+)", rest)
+                    am = re.match(r"\s*([A-Za-z]+)\s*(\d+)", rest)
                     if am:
                         comp["atom_sym"] = am.group(1)
                         comp["atom_idx"] = int(am.group(2)) - 1
@@ -392,7 +397,7 @@ class _PropertyParsingMixin:
             None,
         )
         if start is not None:
-            for line in self.lines[start : start + 60]:
+            for line in self.lines[start:]:
                 match = _NPA_ROW.match(line)
                 if match:
                     rows.append(
@@ -406,8 +411,8 @@ class _PropertyParsingMixin:
                             "total": float(match.group(7)),
                         }
                     )
-                elif rows and "===" in line:
-                    break
+                elif rows:
+                    break  # the "====" rule under the last atom
         self.data["nbo_population"] = rows
 
     def parse_nbo_configurations(self):
@@ -430,8 +435,8 @@ class _PropertyParsingMixin:
             None,
         )
         if start is not None:
-            for line in self.lines[start + 1 : start + 80]:
-                match = re.match(r"^\s*([A-Z][a-z]?)\s+(\d+)\s+(\S.*)$", line)
+            for line in self.lines[start + 1 :]:
+                match = re.match(r"^\s*([A-Z][a-z]?)\s*(\d+)\s+(\S.*)$", line)
                 if match:
                     orbitals = {
                         label.lower(): float(occ)
@@ -474,7 +479,7 @@ class _PropertyParsingMixin:
         )
         if start is not None:
             gap = 0
-            for line in self.lines[start + 1 : start + 5000]:
+            for line in self.lines[start + 1 :]:
                 if rows and "natural atomic orbital occupancies" in line.lower():
                     break  # the next (per-spin) NAO table begins
                 match = _NAO_ROW.match(line)
@@ -526,7 +531,7 @@ class _PropertyParsingMixin:
             i = start
             while i < len(self.lines) and "====" not in self.lines[i]:
                 i += 1
-            for line in self.lines[i + 1 : i + 200]:
+            for line in self.lines[i + 1 :]:
                 match = _BENDING_ROW.match(line)
                 if not match:
                     if entries:
@@ -552,7 +557,7 @@ class _PropertyParsingMixin:
                         "atoms": [
                             (element, int(number))
                             for element, number in re.findall(
-                                r"([A-Z][a-z]?)\s+(\d+)", head.group(3)
+                                r"([A-Z][a-z]?)\s*(\d+)", head.group(3)
                             )
                         ],
                         "loc_theta": values[0],
@@ -656,7 +661,7 @@ class _PropertyParsingMixin:
         for line in self.lines[start + 1 : start + 20000]:
             if "Total *" in line:
                 break
-            parts = line.split()
+            parts = _split_atom_label(line)
             if len(parts) >= 7 and parts[1].isdigit():
                 try:
                     rows.append(

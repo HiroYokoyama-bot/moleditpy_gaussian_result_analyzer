@@ -160,7 +160,7 @@ def main():
         if not name.endswith(".py"):
             continue
         module_name = f"{package}.{name[:-3]}"
-        if name != "__init__.py":
+        if name not in ("__init__.py", "__main__.py"):
             module = importlib.import_module(module_name)
             module.__file__ = os.path.join(settings_home, name)
 

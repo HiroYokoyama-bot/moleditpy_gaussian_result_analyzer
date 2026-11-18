@@ -21,6 +21,8 @@ _DROPPED_LINE = re.compile(
     r"Input=|Output=|Initial command|\(Enter |Default route)"
 )
 _ARCHIVE_WIDTH = 70
+# NBO 6/7 print the licensee's name and licence number under their banner.
+_NBO_LICENSEE = re.compile(r"^(\s*\*{5,}) (?!Gaussian NBO).+? (\*{5,})\s*$")
 
 
 def _clean_archive(block):
@@ -69,6 +71,8 @@ def sanitize(text):
         i += 1
         if _DROPPED_LINE.match(line):
             continue
+        if any("N A T U R A L   B O N D" in prev for prev in out[-3:]):
+            line = _NBO_LICENSEE.sub(r"\1 LICENSEE \2", line)
         line = _WINDOWS_PATH.sub("PATH", line)
         line = _UNIX_HOME.sub("PATH", line)
         line = _SCRATCH_NAME.sub("Gau-0", line)

@@ -246,5 +246,47 @@ class FusedAtomLabels(unittest.TestCase):
         self.assertEqual(rows[1]["h1_dev"], 1.8)
 
 
+class RealGaussianSample(unittest.TestCase):
+    """c33cl_nbo7.out: Gaussian 16 B.01 + NBO 7.0.10, C33H67Cl, Cl is atom 101."""
+
+    @classmethod
+    def setUpClass(cls):
+        path = os.path.join(
+            os.path.dirname(__file__), "sample_outputs", "c33cl_nbo7.out"
+        )
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+        cls.parser = P.GaussianParser()
+        cls.parser.load_from_memory(text, path)
+        cls.data = cls.parser.data
+
+    def test_every_table_is_read_to_its_last_row(self):
+        self.assertEqual(len(self.data["nbo_population"]), 101)
+        self.assertEqual(len(self.data["nbo_configurations"]), 101)
+        self.assertEqual(len(self.data["nbo_nao"]), 815)
+        self.assertEqual(len(self.data["nbo_orbitals"]), 815)
+        self.assertEqual(len(self.data["nbo_perturbation"]), 474)
+        self.assertEqual(len(self.data["nbo_bending"]), 8)
+
+    def test_the_nbo_charges_reach_atom_101(self):
+        charges = self.data["charges"]["NBO"]
+        self.assertEqual(len(charges), 101)
+        self.assertEqual(
+            (charges[-1]["atom_sym"], charges[-1]["atom_idx"]), ("Cl", 100)
+        )
+
+    def test_a_bond_to_atom_101_has_both_hybrids(self):
+        bond = next(
+            o
+            for o in self.data["nbo_orbitals"]
+            if o["type"] == "BD ( 1)" and o["atoms"] == "C 33-Cl101"
+        )
+        self.assertEqual(bond["atom_indices"], [32, 100])
+        self.assertEqual(
+            [(h["atom_sym"], h["atom_idx"]) for h in bond["hybrids"]],
+            [("C", 32), ("Cl", 100)],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

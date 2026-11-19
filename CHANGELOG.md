@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.4 — 2026-11-19
+
+- Thermochemistry: values and units are now in separate columns (Property / Value / Unit, with a narrow Unit column), so numbers paste into a spreadsheet as numbers. Any range of cells can be selected and copied with Ctrl+C, the right-click menu (Copy Selection / Copy All) or the Copy to Clipboard button; CSV export gains the Unit column. Section headings span the row and are bold, and values are right-aligned.
+
 ## 1.2.3 — 2026-11-19
 
 - Faster loading of outputs with many orbitals. The electron count was looked up again for every orbital by rereading the whole file, so a 0.45 MB NBO job took 8 s to open and now takes under 0.1 s. The parsed results are unchanged.

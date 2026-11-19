@@ -38,6 +38,16 @@ class _ElectronicParsingMixin:
 
     def _electron_counts(self):
         """(n_alpha, n_beta) from the last count printed, or (None, None)."""
+        # Asked once per orbital; rescanning the file each time made reading
+        # a few thousand orbitals take seconds.
+        cached = self.__dict__.get("_counts_cache")
+        if cached and cached[0] is self.lines and cached[1] == len(self.lines):
+            return cached[2]
+        counts = self._scan_electron_counts()
+        self._counts_cache = (self.lines, len(self.lines), counts)
+        return counts
+
+    def _scan_electron_counts(self):
         for line in reversed(self.lines):
             match = _ELECTRONS.search(line)
             if match:

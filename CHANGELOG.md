@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0 — 2026-11-19
+
+- Thermochemistry: an Energy unit selector (Eh, kcal/mol, kJ/mol, eV) converts every energy row, including the detailed corrections and entropy terms; copy and CSV export follow the shown unit. Temperature stays in K. Eh is the default; the chosen unit is remembered.
+- Thermochemistry: the Property column now fits its text and the Value column takes the remaining width, so the dialog is narrower.
+
 ## 1.2.4 — 2026-11-19
 
 - Thermochemistry: values and units are now in separate columns (Property / Value / Unit, with a narrow Unit column), so numbers paste into a spreadsheet as numbers. Any range of cells can be selected and copied with Ctrl+C, the right-click menu (Copy Selection / Copy All) or the Copy to Clipboard button; CSV export gains the Unit column. Section headings span the row and are bold, and values are right-aligned.

@@ -88,6 +88,45 @@ real Qt and presses its buttons.
 - Cartesian g functions are not supported. The orbital window refuses to draw them
   rather than showing an orbital that looks right and is not.
 
+## Command line
+
+The analyzer also runs without a window, so a
+script, a batch job or a remote shell can read an output file directly. No
+editor and no Qt window is opened.
+
+```bash
+moleditpy -r gaussian_result_analyzer parse job.log                 # summary
+moleditpy -r gaussian_result_analyzer parse job.log --json          # every parsed value, as JSON
+moleditpy -r gaussian_result_analyzer parse job.log --json -s thermal -s frequencies
+moleditpy -r gaussian_result_analyzer xyz job.log -o final.xyz      # final structure
+moleditpy -r gaussian_result_analyzer xyz job.log --all -o path.xyz # every step, one frame each
+```
+
+`moleditpy -r` needs MoleditPy 5.3.0 or later. `-r` is short for
+`--run-plugin`; `moleditpy --list-plugins` shows the installed
+plugins that can be run this way. `python -m` works just as well, from the
+folder that contains the `gaussian_result_analyzer` folder (your plugins folder, or a checkout of
+this repository), with the Python MoleditPy is installed in, and needs no
+MoleditPy launcher:
+
+```bash
+python -m gaussian_result_analyzer parse job.log
+```
+
+`FILE` is a Gaussian output (`.log`, `.out`) or formatted checkpoint (`.fchk`); a checkpoint is paired with the output beside it, as in the window.
+
+| Command | What it does |
+|---|---|
+| `parse FILE` | Prints a summary: program version, termination, formula, charge and multiplicity, SCF energy, <S**2>, HOMO/LUMO gap, dipole, steps and whether an optimisation converged, frequencies with the number of imaginary modes, Gibbs energy, excited states, NMR, charges and NBO, each only when the file has it. The last line lists the sections present. |
+| `parse FILE --json` | Prints the parsed data the analysis windows read, as JSON. `-s NAME` (repeatable) keeps only those top-level sections; `--indent N` sets the indent. |
+| `xyz FILE` | Writes the final structure as XYZ in Angstrom, with the SCF energy in the comment line. |
+| `xyz FILE --all` | Writes a multi-frame XYZ: the points of a scan or IRC, otherwise every optimisation cycle, each with its energy in the comment line. |
+
+Every command takes `-o PATH` to write a file instead of standard output.
+The exit status is 0 on success, 1 when the file cannot be read, is not Gaussian
+output or has nothing to write, and 2 for a usage error such as an unknown
+section.
+
 ## Installation
 
 Install it through the MoleditPy Plugin Installer, or unpack the release zip into

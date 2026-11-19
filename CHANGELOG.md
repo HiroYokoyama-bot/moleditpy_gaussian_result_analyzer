@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.2 — 2026-11-19
+
+- README: a Command line section describing `parse` and `xyz` under `moleditpy -r`.
+
 ## 1.2.1 — 2026-11-18
 
 - New `xyz` command: `moleditpy -r gaussian_result_analyzer xyz FILE` writes the final structure as XYZ, and `--all` every step as a multi-frame XYZ (the points of a scan or IRC, otherwise the optimisation cycles) with each energy in the comment line. `-o PATH` writes to a file.

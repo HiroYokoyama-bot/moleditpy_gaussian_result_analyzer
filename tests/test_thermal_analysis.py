@@ -245,15 +245,26 @@ class TestEnergyUnits(unittest.TestCase):
             dict(dlg.table.rows_as_pairs())["Gibbs Free Energy (G)"], "-1.50000000"
         )
 
-    def test_the_unit_is_not_saved(self):
+    def test_unit_round_trips_through_settings(self):
         with tempfile.TemporaryDirectory() as d:
             settings = os.path.join(d, "settings.json")
             dlg = _bare_dialog({}, unit="kcal/mol")
             dlg.settings_file = settings
             dlg.save_settings()
-            with open(settings, encoding="utf-8") as f:
-                on_disk = json.load(f)
-        self.assertNotIn("energy_unit", on_disk["thermal_settings"])
+            other = _bare_dialog({})
+            other.settings_file = settings
+            other.load_settings()
+        self.assertEqual(other.cmb_unit.currentText(), "kcal/mol")
+
+    def test_an_unknown_saved_unit_is_ignored(self):
+        with tempfile.TemporaryDirectory() as d:
+            settings = os.path.join(d, "settings.json")
+            with open(settings, "w", encoding="utf-8") as f:
+                json.dump({"thermal_settings": {"energy_unit": "furlongs"}}, f)
+            dlg = _bare_dialog({})
+            dlg.settings_file = settings
+            dlg.load_settings()
+        self.assertEqual(dlg.cmb_unit.currentText(), "Eh")
 
 
 # ---------------------------------------------------------------------------

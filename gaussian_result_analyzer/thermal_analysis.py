@@ -156,12 +156,14 @@ class ThermalTableDialog(QDialog):
         event.accept()
 
     def load_settings(self):
-        """Restore the saved 'show detailed values' preference."""
+        """Restore the saved 'show detailed values' and energy-unit preferences."""
         if os.path.exists(self.settings_file):
             settings = load_section(self.settings_file, "thermal_settings")
             try:
                 if "show_details" in settings:
                     self.chk_details.setChecked(bool(settings["show_details"]))
+                if settings.get("energy_unit") in ENERGY_UNITS:
+                    self.cmb_unit.setCurrentText(settings["energy_unit"])
 
             except (
                 RuntimeError,
@@ -173,8 +175,11 @@ class ThermalTableDialog(QDialog):
                 logging.warning("Error loading thermal settings: %s", e)
 
     def save_settings(self):
-        """Persist the 'show detailed values' preference."""
-        thermal_settings = {"show_details": self.chk_details.isChecked()}
+        """Persist the 'show detailed values' and energy-unit preferences."""
+        thermal_settings = {
+            "show_details": self.chk_details.isChecked(),
+            "energy_unit": self.energy_unit(),
+        }
         save_section(self.settings_file, "thermal_settings", thermal_settings)
 
     def energy_unit(self):

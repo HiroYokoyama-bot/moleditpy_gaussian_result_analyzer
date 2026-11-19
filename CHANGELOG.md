@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.3 — 2026-11-19
+
+- Faster loading of outputs with many orbitals. The electron count was looked up again for every orbital by rereading the whole file, so a 0.45 MB NBO job took 8 s to open and now takes under 0.1 s. The parsed results are unchanged.
+
 ## 1.2.2 — 2026-11-19
 
 - README: a Command line section describing `parse` and `xyz` under `moleditpy -r`.

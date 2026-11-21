@@ -14,6 +14,16 @@ _EXCITED = re.compile(
     r"f=\s*(-?\d+\.\d+)(?:\s+<S\*\*2>=\s*(-?\d+\.\d+))?"
 )
 _TRANSITION = re.compile(r"^\s*(\d+[AB]?)\s*(->|<-)\s*(\d+[AB]?)\s+(-?\d+\.\d+)\s*$")
+
+
+def _zero_based_orbital(label):
+    """A printed orbital label on the MO table's 0-based numbering.
+
+    Gaussian prints orbitals from 1, spin suffix included ("125A"); the MO
+    coefficients are stored 0-based, so the printed 125A is orbital 124A.
+    """
+    match = re.match(r"(\d+)([AB]?)", label)
+    return f"{int(match.group(1)) - 1}{match.group(2)}"
 _SHIELDING = re.compile(
     r"^\s*(\d+)\s+([A-Za-z]{1,3})\s+Isotropic\s*=\s*(-?\d+\.\d+)"
     r"\s+Anisotropy\s*=\s*(-?\d+\.\d+)"
@@ -234,7 +244,8 @@ class _SpectraParsingMixin:
                 match = _TRANSITION.match(line)
                 if match:
                     current["transitions"].append(
-                        f"{match.group(1)} {match.group(2)} {match.group(3)} "
+                        f"{_zero_based_orbital(match.group(1))} {match.group(2)} "
+                        f"{_zero_based_orbital(match.group(3))} "
                         f"(coeff: {match.group(4)})"
                     )
         self._read_gauge_tables(states, start)

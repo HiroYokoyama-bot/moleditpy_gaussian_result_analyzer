@@ -119,6 +119,28 @@ class TestSpectra(unittest.TestCase):
         self.assertEqual(states[0]["label"], "Triplet-A2")
         self.assertAlmostEqual(states[0]["energy_ev"], 3.1664)
 
+    def test_tddft_transition_orbitals_are_zero_based(self):
+        """Gaussian prints orbitals from 1 and the MO table numbers them from
+        0, so the log's dominant 8 -> 9 (HOMO -> LUMO) reads 7 -> 8 here."""
+        states = _parse("h2co_tddft")["tddft"]
+        joined = " ".join(states[1]["transitions"])
+        self.assertIn("7 -> 8", joined)
+        self.assertNotIn("8 -> 9", joined)
+
+    def test_tddft_transition_spin_suffixes_are_kept(self):
+        parser = _load_module("parser").GaussianParser()
+        parser.load_from_memory(
+            "Excitation energies and oscillator strengths:\n"
+            " Excited State   1:      Singlet-A      4.0000 eV  309.96 nm"
+            "  f=0.0100  <S**2>=0.000\n"
+            "     125A -> 128A         0.65000\n",
+            "synthetic.out",
+        )
+        self.assertEqual(
+            parser.data["tddft"][0]["transitions"],
+            ["124A -> 127A (coeff: 0.65000)"],
+        )
+
     def test_nmr_shieldings_and_couplings(self):
         data = _parse("methanol_nmr")
         self.assertEqual(len(data["nmr_shielding"]), 6)
